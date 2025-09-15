@@ -23,7 +23,7 @@ int* sorted = (int*)sort();
 void* (*jitsort(const void* ptr, size_t size, size_t len, size_t (*func)(const void*)))()
 ```
 
-> [!INFO]
+> [!NOTE]
 > If providing a function to calculate size, `func` must return 0 when the provided pointer is invalid or no elements remain.
 
 - `ptr`: Pointer to the array
