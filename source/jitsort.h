@@ -28,7 +28,8 @@ static inline void* (*jitsort(
     
     const void* end = ptr + (size * len);
     size_t bytes = func == NULL ? size * len : 0;
-    
+    size_t code_size = 1024;
+
     if (func != NULL)
     {
         for (const void* cur = ptr; cur < end; cur = (const char*)cur + size)
@@ -36,16 +37,23 @@ static inline void* (*jitsort(
             size_t cur_size = func(cur);
             if (cur_size == 0)
                 break;
+            code_size = cur_size > code_size ? cur_size * 64 : code_size;
             bytes += cur_size;
         }
     }
     
-    void* exec = mmap(NULL, 1024, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    void* exec = mmap(
+        NULL, 
+        code_size, 
+        PROT_READ | PROT_WRITE, 
+        MAP_PRIVATE | MAP_ANONYMOUS, 
+        -1, 
+        0);
     if (exec == MAP_FAILED)
         return NULL;
     
     uint8_t* code = (uint8_t*)exec;
-    memset(code, 0x90, 1024);
+    memset(code, 0x90, code_size);
     
     // Prologue
     code[0] = 0x55;                    // push rbp
@@ -139,6 +147,7 @@ static inline void* (*jitsort(
     code[offset++] = 0x5d; // pop rbp
     code[offset++] = 0xc3; // ret
     
+    mprotect(exec, code_size, PROT_READ | PROT_EXEC);
     return (void*(*)())exec;
 }
 
