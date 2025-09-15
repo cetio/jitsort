@@ -40,11 +40,11 @@ static inline void* (*jitsort(
         }
     }
     
-    void* exec_mem = mmap(NULL, 1024, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-    if (exec_mem == MAP_FAILED)
+    void* exec = mmap(NULL, 1024, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    if (exec == MAP_FAILED)
         return NULL;
     
-    uint8_t* code = (uint8_t*)exec_mem;
+    uint8_t* code = (uint8_t*)exec;
     memset(code, 0x90, 1024);
     
     // Prologue
@@ -139,7 +139,7 @@ static inline void* (*jitsort(
     code[offset++] = 0x5d; // pop rbp
     code[offset++] = 0xc3; // ret
     
-    return (void*(*)())exec_mem;
+    return (void*(*)())exec;
 }
 
 #endif // JITSORT_H
